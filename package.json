@@ -1,0 +1,17 @@
+{
+  "name": "zacharylester",
+  "version": "0.0.1",
+  "description": "zacharylester.com",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "author": "Zachary Lester",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.1",
+    "express": "^4.13.4",
+    "path": "^0.12.7"
+  }
+}
