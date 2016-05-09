@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
-
-var port = 3000;
+var config = require('./config/');
+var port = config.prod.port || config.dev.port;
 
 require('./middleware')(app, express);
 require('./routes')(app);
