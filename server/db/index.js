@@ -14,6 +14,7 @@ module.exports = {
         if (err) {
           return callback(err);
         }
+        done();
         callback(null, results.rows);
       })
     });

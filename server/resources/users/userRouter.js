@@ -11,8 +11,8 @@ userRouter.route('/')
     });
   })
   .post(function(req, res) {
-    var user = req.body;
-    userController.createOne(function(err, createdUser) {
+    var newUser = req.body;
+    userController.createOne(newUser, function(err, createdUser) {
       if (err) {
         return res.status(500).json({success: false, message: err});
       }
@@ -40,7 +40,10 @@ userRouter.route('/:user_id')
       if (err) {
         return res.status(500).json({success: false, data: err});
       }
-      res.json(updatedUser);
+      if (!updatedUser) {
+        return res.status(404).json({success: false, message: 'User not found'});
+      }
+      res.json({success: true, data: updatedUser});
     });
   })
   .delete(function(req, res) {
@@ -49,7 +52,10 @@ userRouter.route('/:user_id')
       if (err) {
         return res.status(500).json({success: false, message: err});
       }
-      res.json(deletedUser);
+      if (!deletedUser) {
+        return res.status(404).json({success: false, message: 'User not found'});
+      }
+      res.json({success: true, data: deletedUser});
     });
   });
 
