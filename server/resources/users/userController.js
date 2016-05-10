@@ -5,12 +5,12 @@ var createOne = function(newUser, callback) {
     text: 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3)',
     values: [newUser.name, newUser.email, newUser.password]
   };
-  db.query(createParams, function(err, users) {
+  db.query(createParams, function(err) {
     if (err) {
-      if (err.constraint === 'unique_user_name') {
+      if (err.constraint === 'user_name_unique') {
         return callback('Username ' + newUser.name + ' already in use.');
       }
-      if (err.constraint === 'unique_user_email') {
+      if (err.constraint === 'user_email_unique') {
         return callback('Email ' + newUser.email + ' already in use.')
       }
       return callback(err);
@@ -27,7 +27,7 @@ var createOne = function(newUser, callback) {
       callback(null, user);
     });
   });
-}
+};
 
 var retrieve = function(callback) {
   var queryParams = {
@@ -39,7 +39,7 @@ var retrieve = function(callback) {
     }
     callback(null, users);
   });
-}
+};
 
 var retrieveOne = function(user_id, callback) {
   var queryParams = {
@@ -53,30 +53,25 @@ var retrieveOne = function(user_id, callback) {
     var user = users[0] || null;
     callback(null, user);
   });
-}
+};
 
 var updateOne = function(user_id, updatedProperties, callback) {
-  retrieveOne(user_id, function(err, user) {
+  var updateParams = {
+    text: 'UPDATE users SET name = $1, email = $2, password = $3 WHERE user_id = $4',
+    values: [updatedUser.name, updatedUser.email, updatedUser.password, user_id]
+  };
+  db.query(updateParams, function(err) {
     if (err) {
       return callback(err);
     }
-    if (!user) {
-      return callback(null, null);
-    }
-    var updatedUser = Object.assign({}, user, updatedProperties);
-    var queryParams = {
-      text: 'UPDATE users SET name = $1, email = $2, password = $3 WHERE user_id = $4',
-      values: [updatedUser.name, updatedUser.email, updatedUser.password, user_id]
-    };
-    db.query(queryParams, function(err) {
+    retrieveOne(user_id, function(err, user) {
       if (err) {
         return callback(err);
       }
-      callback(null, updatedUser);
+      callback(null, user);
     });
   });
-  
-}
+};
 
 var deleteOne = function(user_id, callback) {
   retrieveOne(user_id, function(err, user) {
@@ -97,12 +92,26 @@ var deleteOne = function(user_id, callback) {
       callback(null, user);
     });
   });
-}
+};
+
+var retrievePosts = function(user_id, callback) {
+  var queryParams = {
+    text: 'SELECT users.name AS author, users.email, posts.post_id, posts.created, posts.title, posts.content FROM users INNER JOIN posts ON (users.user_id = posts.author) WHERE users.user_id = $1;',
+    values: [user_id]
+  };
+  db.query(queryParams, function(err, posts) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, posts);
+  });
+};
 
 module.exports = {
   createOne: createOne,
   retrieve: retrieve,
   retrieveOne: retrieveOne,
   updateOne: updateOne,
-  deleteOne: deleteOne
-}
+  deleteOne: deleteOne,
+  retrievePosts: retrievePosts
+};
