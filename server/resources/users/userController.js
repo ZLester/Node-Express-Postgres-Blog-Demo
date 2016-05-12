@@ -2,10 +2,10 @@ var db = require('../../db');
 
 var createOne = function(newUser, callback) {
   var createParams = {
-    text: 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3)',
+    text: 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *',
     values: [newUser.name, newUser.email, newUser.password]
   };
-  db.query(createParams, function(err) {
+  db.query(createParams, function(err, users) {
     if (err) {
       if (err.constraint === 'user_name_unique') {
         return callback('Username ' + newUser.name + ' already in use.');
@@ -15,17 +15,8 @@ var createOne = function(newUser, callback) {
       }
       return callback(err);
     }
-    var queryParams = {
-      text: 'SELECT * FROM users WHERE email = $1',
-      values: [newUser.email]
-    }
-    db.query(queryParams, function(err, users) {
-      if (err) {
-        return callback(err);
-      }
-      var user = users[0] || null;
-      callback(null, user);
-    });
+    var user = users[0] || null;
+    return callback(null, user);
   });
 };
 
@@ -57,40 +48,30 @@ var retrieveOne = function(user_id, callback) {
 
 var updateOne = function(user_id, updatedProperties, callback) {
   var updateParams = {
-    text: 'UPDATE users SET name = $1, email = $2, password = $3 WHERE user_id = $4',
+    text: 'UPDATE users SET name = $1, email = $2, password = $3 WHERE user_id = $4 RETURNING *',
     values: [updatedUser.name, updatedUser.email, updatedUser.password, user_id]
   };
-  db.query(updateParams, function(err) {
+  db.query(updateParams, function(err, users) {
     if (err) {
       return callback(err);
     }
-    retrieveOne(user_id, function(err, user) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, user);
-    });
+    var user = users[0] || null;
+    callback(null, user);
   });
 };
 
 var deleteOne = function(user_id, callback) {
-  retrieveOne(user_id, function(err, user) {
+  var queryParams = {
+    text: 'DELETE FROM users WHERE user_id = $1 RETURNING *',
+    values: [user_id]
+  };
+  db.query(queryParams, function(err, users) {
     if (err) {
       return callback(err);
     }
-    if (!user) {
-      return callback(null, null);
-    }
-    var queryParams = {
-      text: 'DELETE FROM users WHERE user_id = $1',
-      values: [user_id]
-    };
-    db.query(queryParams, function(err) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, user);
-    });
+    console.log(users);
+    var user = users[0] || null;
+    callback(null, user);
   });
 };
 

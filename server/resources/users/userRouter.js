@@ -62,7 +62,7 @@ userRouter.route('/:user_id')
 userRouter.route('/:user_id/posts')
   .get(function(req, res) {
     var user_id = req.params.user_id;
-    userController.retrievePosts(user_id, function(err, posts) {
+    userController.retrievePostsByID(user_id, function(err, posts) {
       if (err) {
         return res.status(500).json({success: false, data: null, message: err});
       }
